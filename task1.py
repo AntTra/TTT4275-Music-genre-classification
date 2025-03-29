@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from collections import Counter
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -20,10 +19,16 @@ class kNN_Classifier:
     
     def euclidean_distance(self, X1, X2):
         d = sum((a - b)**2 for a, b in zip(X1, X2))
+        
         return np.sqrt(d)
 
-    def mahalanobis_distance(self, X1, X2): #must make actual distance
-        d = sum((a - b)**2 for a, b in zip(X1, X2))
+    def mahalanobis_distance(self, X1, X2):
+        df = np.array(X1) - np.array(X2)
+        d = 0
+        for i in range(len(df)):    
+            for j in range(len(df)):
+                d += df[i] * self.covariance()[i][j] * df[j]
+        
         return np.sqrt(d)
     # Computational power increases with features and number of potential neighbors
     # Increasing k increases computational power?
@@ -36,6 +41,7 @@ class kNN_Classifier:
             distances = []
             for j in range(len(self.X_train)):
                 distance = self.euclidean_distance(self.X_train[j] , X_test[i])
+                #distance = self.mahalanobis_distance(self.X_train[j] , X_test[i])
                 distances.append((distance, j))
             # Sort distances and select KNN
             distances.sort(key=lambda x: x[0])
@@ -51,6 +57,7 @@ class kNN_Classifier:
     def score(self, X_test, Y_test):
         predictions = np.array(self.predict(X_test))
         Y_test = np.array(Y_test)
+        
         return (predictions == Y_test).mean()
 
 df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
