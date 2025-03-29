@@ -8,34 +8,47 @@ import seaborn as sns
 class kNN_Classifier:
     def __init__(self, k):
         self.k = k
+        self.covariance_matrix= []
 
     def fit(self, X, Y):
         self.X_train = X
         self.Y_train = Y
+        self.X_mean = [np.mean(X[Y==i], axis=0) for i in range(10)]
+        self.X_centered = []
+        # Center the data
+        for i in range(len(self.X_train)):
+            self.X_centered.append(self.X_train[i] - self.X_mean[self.Y_train[i]])
+        self.X_centered = np.array(self.X_centered)
 
-    def covariance(self):
-        covariance_matrix = np.cov(self.X_train, rowvar=False)
-        
-        return covariance_matrix
+        for i in range(10):
+            self.covariance_matrix.append(np.cov(self.X_train[Y_train==i], rowvar=False))
+        self.covariance_matrix = np.array(self.covariance_matrix)
     
     def euclidean_distance(self, X1, X2):
-        d = sum((a - b)**2 for a, b in zip(X1, X2))
+        d = np.dot(X1-X2,X1-X2)
         return np.sqrt(d)
 
-    def mahalanobis_distance(self, X1, X2): #must make actual distance
-        d = sum((a - b)**2 for a, b in zip(X1, X2))
+    def mahalanobis_distance(self, X1, X2): 
+        X1genre = self.Y_train[np.where(self.X_train == X1)[0][0]]
+        d = np.dot(np.dot(X1-X2,np.linalg.inv(self.covariance_matrix[X1genre])),X1-X2) 
         return np.sqrt(d)
     # Computational power increases with features and number of potential neighbors
     # Increasing k increases computational power?
     # Large k causes less distinction
     # Small k can be heavily affected by noise
     # Compare Euclidean to other types of distances
-    def predict(self, X_test):
+    def predict(self, X_test,metric='euclidean'):
+        if metric == 'euclidean':
+            distance_func = self.euclidean_distance
+        elif metric == 'mahalanobis':
+            distance_func = self.mahalanobis_distance
+        else:
+            return 0
         final_output = []
         for i in range(len(X_test)):
             distances = []
             for j in range(len(self.X_train)):
-                distance = self.euclidean_distance(self.X_train[j] , X_test[i])
+                distance = distance_func(self.X_train[j] , X_test[i])
                 distances.append((distance, j))
             # Sort distances and select KNN
             distances.sort(key=lambda x: x[0])
@@ -48,21 +61,24 @@ class kNN_Classifier:
             
         return final_output
 
-    def score(self, X_test, Y_test):
-        predictions = np.array(self.predict(X_test))
+    def score(self, predictions, Y_test):
         Y_test = np.array(Y_test)
         return (predictions == Y_test).mean()
 
+    def confusion_matrix(self, predictions, Y_test):
+        Y_test = np.array(Y_test)
+        cm = np.zeros((10, 10), dtype=int)
+        for i in range(len(predictions)):
+            cm[Y_test[i]][predictions[i]] += 1
+        return cm
+    
 df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
-
 # Whitespace removal
 df.columns = df.columns.str.strip()
 
-# TODO: Split code into train and test
 selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", "spectral_centroid_mean", "tempo"]
+#X:data, Y:class of data
 X = df[selected_features].values
-
-# Labels to genres
 y = df["GenreID"].values
 X_train, X_test = X[:800],X[800:]
 Y_train, Y_test = y[:800],y[800:]
@@ -70,34 +86,44 @@ Y_train, Y_test = y[:800],y[800:]
 knn = kNN_Classifier(k=5)
 knn.fit(X_train, Y_train)
 
-prediction = knn.predict(X_test)
+euclidean_prediction = knn.predict(X_test, metric='euclidean')
+mahalanobis_prediction = knn.predict(X_test, metric='mahalanobis')
+euclidean_confusion_matrix = knn.confusion_matrix(euclidean_prediction, Y_test)
+mahalanobis_confusion_matrix = knn.confusion_matrix(mahalanobis_prediction, Y_test)
+euclidean_score = knn.score(euclidean_prediction, Y_test)
+mahalanobis_score = knn.score(mahalanobis_prediction, Y_test)
+print('selected features: ', selected_features)
+#print("Predictions (Euclidean): ", euclidean_prediction)
+#print("Predictions (Mahalanobis): ", mahalanobis_prediction)
+print('Accuracy for ten genres (Euclidean): ', euclidean_score*100, '%')
+print('Accuracy for ten genres (Mahalanobis): ', mahalanobis_score*100, '%')
+print('Confusion Matrix (Euclidean): \n',euclidean_confusion_matrix)
+print('Confusion Matrix (Mahalanobis): \n',mahalanobis_confusion_matrix)
 
-score = knn.score(X_test, Y_test)
-print("Predictions: ", prediction)
-print('Accuracy for ten genres: ', score*100, '%')
 
-selected_genres = ["pop", "disco", "metal", "classical"]#, "hiphop", "reggae", "blues", "rock", "jazz", "country"]
-# Filter data by selected genres
-data_filtered = df[df["Genre"].isin(selected_genres)]
+
+# selected_genres = ["pop", "disco", "metal", "classical"]#, "hiphop", "reggae", "blues", "rock", "jazz", "country"]
+# # Filter data by selected genres
+# data_filtered = df[df["Genre"].isin(selected_genres)]
 
 # Calculate summary statistics grouped by Genre
-summary_stats = data_filtered.groupby("Genre")[selected_features].describe()
-print("Summary Statistics by Genre:")
-print(summary_stats)
-print(knn.covariance())
-#Plot PDF of genres and features 
-plt.figure(figsize=(14, 12))
-for i, feature in enumerate(selected_features):
-    ax = plt.subplot(2, 2, i+1)
-    for genre in selected_genres:
-        subset = data_filtered[data_filtered["Genre"] == genre]
-        sns.kdeplot(subset[feature], label=genre, fill=True, common_norm=False, ax=ax)
-        ax.set_title("")
-    #plt.title(f"PDF of {feature}")
-    #plt.xlabel(feature)
-    plt.ylabel("Density")
-#plt.tight_layout()
-plt.legend()
-plt.show()
+# summary_stats = data_filtered.groupby("Genre")[selected_features].describe()
+# print("Summary Statistics by Genre:")
+# print(summary_stats)
+# print(knn.covariance())
+# #Plot PDF of genres and features 
+# plt.figure(figsize=(14, 12))
+# for i, feature in enumerate(selected_features):
+#     ax = plt.subplot(2, 2, i+1)
+#     for genre in selected_genres:
+#         subset = data_filtered[data_filtered["Genre"] == genre]
+#         sns.kdeplot(subset[feature], label=genre, fill=True, common_norm=False, ax=ax)
+#         ax.set_title("")
+#     #plt.title(f"PDF of {feature}")
+#     #plt.xlabel(feature)
+#     plt.ylabel("Density")
+# #plt.tight_layout()
+# plt.legend()
+# plt.show()
 
 
