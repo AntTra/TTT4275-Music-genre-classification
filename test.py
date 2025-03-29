@@ -64,7 +64,14 @@ class kNN_Classifier:
         predictions = np.array(self.predict(X_test))
         Y_test = np.array(Y_test)
         return (predictions == Y_test).mean()
-
+    
+    def confusion_matrix(self, predictions, Y_test):
+        Y_test = np.array(Y_test)
+        cm = np.zeros((10, 10), dtype=int)
+        for i in range(len(predictions)):
+            cm[Y_test[i]][predictions[i]] += 1
+        return cm
+    
 df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
 
 # Whitespace removal
@@ -83,10 +90,12 @@ Y_train, Y_test = y[:800],y[800:]
 knn = kNN_Classifier(k=5)
 knn.fit(X_train, Y_train)
 prediction = knn.predict(X_test)
-
+confusion_matrix = knn.confusion_matrix(prediction, Y_test)
 score = knn.score(X_test, Y_test)
 print("Predictions: ", prediction)
 print('Accuracy for ten genres: ', score*100, '%')
+print('Confusion Matrix: \n',confusion_matrix)
+
 
 # selected_genres = ["pop", "disco", "metal", "classical"]#, "hiphop", "reggae", "blues", "rock", "jazz", "country"]
 # # Filter data by selected genres
