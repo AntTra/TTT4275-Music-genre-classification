@@ -13,20 +13,26 @@ class kNN_Classifier:
     def fit(self, X, Y):
         self.X_train = X
         self.Y_train = Y
+        self.X_mean = [np.mean(X[Y==i], axis=0) for i in range(10)]
+        self.X_centered = []
+        # Center the data
+        for i in range(len(self.X_train)):
+            self.X_centered.append(self.X_train[i] - self.X_mean[self.Y_train[i]])
+        self.X_centered = np.array(self.X_centered)
 
-    def covariance(self):
         for i in range(10):
             self.covariance_matrix.append(np.cov(self.X_train[Y_train==i], rowvar=False))
-        #print(self.covariance_matrix)
+        self.covariance_matrix = np.array(self.covariance_matrix)
 
     
     def euclidean_distance(self, X1, X2):
         d = sum((a - b)**2 for a, b in zip(X1, X2))
         return np.sqrt(d)
 
-    def mahalanobis_distance(self, X1, X2): #must make actual distance
-        
-        d = sum([np.dot(np.dot(X1-X2,np.linalg.inv(self.covariance_matrix[i])),X1-X2) for i in range(10)]) #sum(np.dot(a - b, np.linalg.inv(self.covariance_matrix[a])) for a, b in zip(X1, X2)) ## AAAAAAAAAAAAAAA
+    def mahalanobis_distance(self, X1, X2): #must make actual distance  
+        X1genre = self.Y_train[np.where(self.X_train == X1)[0][0]]
+        d = np.dot(np.dot(X1-X2,np.linalg.inv(self.covariance_matrix[X1genre])),X1-X2) #sum(np.dot(a - b, np.linalg.inv(self.covariance_matrix[a])) for a, b in zip(X1, X2))
+
          #d = sum(np.dot(a - b, np.linalg.inv(self.covariance_matrix[a])) for a, b in zip(X1, X2)) ## AAAAAAAAAAAAAAA
         #d = np.dot(X1 - X2, np.linalg.inv(self.covariance_matrix[i for i in range(10)]))
         return np.sqrt(d)
@@ -73,24 +79,24 @@ y = df["GenreID"].values
 X_train, X_test = X[:800],X[800:]
 Y_train, Y_test = y[:800],y[800:]
 
+
 knn = kNN_Classifier(k=5)
 knn.fit(X_train, Y_train)
-knn.covariance()
 prediction = knn.predict(X_test)
 
 score = knn.score(X_test, Y_test)
 print("Predictions: ", prediction)
 print('Accuracy for ten genres: ', score*100, '%')
 
-selected_genres = ["pop", "disco", "metal", "classical"]#, "hiphop", "reggae", "blues", "rock", "jazz", "country"]
-# Filter data by selected genres
-data_filtered = df[df["Genre"].isin(selected_genres)]
+# selected_genres = ["pop", "disco", "metal", "classical"]#, "hiphop", "reggae", "blues", "rock", "jazz", "country"]
+# # Filter data by selected genres
+# data_filtered = df[df["Genre"].isin(selected_genres)]
 
-# Calculate summary statistics grouped by Genre
-summary_stats = data_filtered.groupby("Genre")[selected_features].describe()
-print("Summary Statistics by Genre:")
-print(summary_stats)
-print(knn.covariance())
+# # Calculate summary statistics grouped by Genre
+# summary_stats = data_filtered.groupby("Genre")[selected_features].describe()
+# print("Summary Statistics by Genre:")
+# print(summary_stats)
+# print(knn.covariance())
 #Plot PDF of genres and features 
 # plt.figure(figsize=(14, 12))
 # for i, feature in enumerate(selected_features):
