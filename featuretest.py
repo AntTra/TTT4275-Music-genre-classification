@@ -16,18 +16,18 @@ filepath = 'Classification music/GenreClassData_30s.txt'
 df = load_data(filepath)
 
 # Selected features and genres 
-#selected_features = ["spectral_centroid_mean", "spectral_centroid_var", "spectral_bandwidth_mean", "spectral_bandwidth_var", "spectral_rolloff_mean", "spectral_rolloff_var", "spectral_contrast_mean", "spectral_contrast_var", "spectral_flatness_mean", "spectral_flatness_var"]
+selected_features = ["spectral_centroid_mean", "spectral_centroid_var", "spectral_bandwidth_mean", "spectral_bandwidth_var", "spectral_rolloff_mean", "spectral_rolloff_var", "spectral_contrast_mean", "spectral_contrast_var", "spectral_flatness_mean", "spectral_flatness_var"]
 #selected_features = ["chroma_stft_1_mean", "chroma_stft_2_mean", "chroma_stft_3_mean", "chroma_stft_4_mean", "chroma_stft_5_mean", "chroma_stft_6_mean", "chroma_stft_7_mean", "chroma_stft_8_mean", "chroma_stft_9_mean", "chroma_stft_10_mean", "chroma_stft_11_mean", "chroma_stft_12_mean"]
 #selected_features = ["mfcc_1_mean", "mfcc_2_mean", "mfcc_3_mean", "mfcc_4_mean", "mfcc_5_mean", "mfcc_6_mean", "mfcc_7_mean", "mfcc_8_mean", "mfcc_9_mean", "mfcc_10_mean", "mfcc_11_mean", "mfcc_12_mean"]
 #selected_features = ["mfcc_1_std", "mfcc_2_std", "mfcc_3_std", "mfcc_4_std", "mfcc_5_std", "mfcc_6_std", "mfcc_7_std", "mfcc_8_std", "mfcc_9_std", "mfcc_10_std", "mfcc_11_std", "mfcc_12_std"]
 #selected_features = ["tempo"] 
-selected_features = ["mfcc_1_mean", "spectral_rolloff_mean", "spectral_centroid_mean", "tempo"]
+#selected_features = ["mfcc_1_mean", "spectral_rolloff_mean", "spectral_centroid_mean", "tempo"]
 selected_genres = ["reggae", "jazz", "disco", "classical", "metal", "country"]
 
 # Genres:   "pop", "disco", "metal", "classical", "hiphop", "reggae", "blues", "rock", "jazz", "country"]
-#selected_genres = ["pop", "disco", "metal", "classical", "hiphop", "reggae", "blues", "rock", "jazz", "country"] # All genres
+selected_genres = ["pop", "disco", "metal", "classical", "hiphop", "reggae", "blues", "rock", "jazz", "country"] # All genres
 #selected_genres = ["reggae", "jazz", "disco", "classical", "metal", "country"]
-selected_genres = ["reggae"]
+#selected_genres = ["reggae"]
 
 data_filtered = df[df["Genre"].isin(selected_genres)]
 
