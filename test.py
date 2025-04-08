@@ -1,10 +1,8 @@
 import numpy as np
 import pandas as pd
 from collections import Counter
-#from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import seaborn as sns
-#import scipy as stats 
 
 class kNN_Classifier:
     def __init__(self, k):
@@ -14,28 +12,28 @@ class kNN_Classifier:
     def fit(self, X, Y):
         self.X_train = X
         self.Y_train = Y
+        self.X_mean = [np.mean(X[Y==i], axis=0) for i in range(10)]
+        self.X_centered = []
+        # Center the data
+        for i in range(len(self.X_train)):
+            self.X_centered.append(self.X_train[i] - self.X_mean[self.Y_train[i]])
+        self.X_centered = np.array(self.X_centered)
 
-    def covariance(self):
         for i in range(10):
             self.covariance_matrix.append(np.cov(self.X_train[Y_train==i], rowvar=False))
-        #print(self.covariance_matrix)
-        return self.covariance_matrix
+        self.covariance_matrix = np.array(self.covariance_matrix)
+
     
     def euclidean_distance(self, X1, X2):
         d = sum((a - b)**2 for a, b in zip(X1, X2))
-        
         return np.sqrt(d)
 
-    def mahalanobis_distance(self, X1, X2): #must make actual distance
-        df = np.array(X1) - np.array(X2)
-        
-        #d = sum([np.dot(np.dot(X1-X2,np.linalg.inv(self.covariance_matrix[i])),X1-X2) for i in range(10)]) # score 37.33684 %
-        d = sum([np.dot(np.dot(df,np.linalg.inv(self.covariance_matrix[i])),df) for i in range(len(df))]) # score 38.947 %
-        
-        #d = np.dot(np.dot(X1-X2, np.linalg.inv(self.covariance_matrix[10])), X1-X2)
-        #d = sum(np.dot(a - b, np.linalg.inv(self.covariance_matrix[a])) for a, b in zip(X1, X2)) 
+    def mahalanobis_distance(self, X1, X2): #must make actual distance  
+        X1genre = self.Y_train[np.where(self.X_train == X1)[0][0]]
+        d = np.dot(np.dot(X1-X2,np.linalg.inv(self.covariance_matrix[X1genre])),X1-X2) #sum(np.dot(a - b, np.linalg.inv(self.covariance_matrix[a])) for a, b in zip(X1, X2))
+
+         #d = sum(np.dot(a - b, np.linalg.inv(self.covariance_matrix[a])) for a, b in zip(X1, X2)) ## AAAAAAAAAAAAAAA
         #d = np.dot(X1 - X2, np.linalg.inv(self.covariance_matrix[i for i in range(10)]))
-        
         return np.sqrt(d)
     # Computational power increases with features and number of potential neighbors
     # Increasing k increases computational power?
@@ -64,46 +62,50 @@ class kNN_Classifier:
     def score(self, X_test, Y_test):
         predictions = np.array(self.predict(X_test))
         Y_test = np.array(Y_test)
-        
         return (predictions == Y_test).mean()
-
+    
+    def confusion_matrix(self, predictions, Y_test):
+        Y_test = np.array(Y_test)
+        cm = np.zeros((10, 10), dtype=int)
+        for i in range(len(predictions)):
+            cm[Y_test[i]][predictions[i]] += 1
+        return cm
+    
 df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
 
 # Whitespace removal
 df.columns = df.columns.str.strip()
 
+# TODO: Split code into train and test
 selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", "spectral_centroid_mean", "tempo"]
-X = df[selected_features].values 
+train_df = df[df["Type"] == "Train"]
+test_df = df[df["Type"] == "Test"]
 
-# Labels to genres
-y = df["GenreID"].values
-X_train, X_test = X[:800],X[800:]
-Y_train, Y_test = y[:800],y[800:]
+X_train = train_df[selected_features].values
+Y_train = train_df["GenreID"].values  
+X_test  = test_df[selected_features].values
+Y_test  = test_df["GenreID"].values
+
 
 knn = kNN_Classifier(k=5)
 knn.fit(X_train, Y_train)
-knn.covariance()
 prediction = knn.predict(X_test)
-
+confusion_matrix = knn.confusion_matrix(prediction, Y_test)
 score = knn.score(X_test, Y_test)
-# print("Predictions: ", prediction)
-selected_genres = ["pop", "disco", "metal", "classical"]#, "hiphop", "reggae", "blues", "rock", "jazz", "country"]
-print("==============================================================================================================================================================")
-print(f"Accuracy for genres {selected_genres} using features {selected_features}: {score*100:.2f}%")
-print("==============================================================================================================================================================")
-
-# Filter data by selected genres
-data_filtered = df[df["Genre"].isin(selected_genres)]
-
-# Calculate summary statistics grouped by Genre
-summary_stats = data_filtered.groupby("Genre")[selected_features].describe()
-print("Summary Statistics by Genre:")
-print(summary_stats)
-print("==============================================================================================================================================================")
-#print(knn.covariance())
+print("Predictions: ", prediction)
+print('Accuracy for ten genres: ', score*100, '%')
+print('Confusion Matrix: \n',confusion_matrix)
 
 
+# selected_genres = ["pop", "disco", "metal", "classical"]#, "hiphop", "reggae", "blues", "rock", "jazz", "country"]
+# # Filter data by selected genres
+# data_filtered = df[df["Genre"].isin(selected_genres)]
 
+# # Calculate summary statistics grouped by Genre
+# summary_stats = data_filtered.groupby("Genre")[selected_features].describe()
+# print("Summary Statistics by Genre:")
+# print(summary_stats)
+# print(knn.covariance())
 #Plot PDF of genres and features 
 # plt.figure(figsize=(14, 12))
 # for i, feature in enumerate(selected_features):

@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.patches as mpatches
-
+import math
 # ---------------------------------
 # Data Loading and Preprocessing
 # ---------------------------------
@@ -16,16 +16,16 @@ filepath = 'Classification music/GenreClassData_30s.txt'
 df = load_data(filepath)
 
 # Selected features and genres 
-selected_features = ["spectral_centroid_mean", "spectral_centroid_var", "spectral_bandwidth_mean", "spectral_bandwidth_var", "spectral_rolloff_mean", "spectral_rolloff_var", "spectral_contrast_mean", "spectral_contrast_var", "spectral_flatness_mean", "spectral_flatness_var"]
+#selected_features = ["spectral_centroid_mean", "spectral_centroid_var", "spectral_bandwidth_mean", "spectral_bandwidth_var", "spectral_rolloff_mean", "spectral_rolloff_var", "spectral_contrast_mean", "spectral_contrast_var", "spectral_flatness_mean", "spectral_flatness_var"]
 #selected_features = ["chroma_stft_1_mean", "chroma_stft_2_mean", "chroma_stft_3_mean", "chroma_stft_4_mean", "chroma_stft_5_mean", "chroma_stft_6_mean", "chroma_stft_7_mean", "chroma_stft_8_mean", "chroma_stft_9_mean", "chroma_stft_10_mean", "chroma_stft_11_mean", "chroma_stft_12_mean"]
 #selected_features = ["mfcc_1_mean", "mfcc_2_mean", "mfcc_3_mean", "mfcc_4_mean", "mfcc_5_mean", "mfcc_6_mean", "mfcc_7_mean", "mfcc_8_mean", "mfcc_9_mean", "mfcc_10_mean", "mfcc_11_mean", "mfcc_12_mean"]
-#selected_features = ["mfcc_1_std", "mfcc_2_std", "mfcc_3_std", "mfcc_4_std", "mfcc_5_std", "mfcc_6_std", "mfcc_7_std", "mfcc_8_std", "mfcc_9_std", "mfcc_10_std", "mfcc_11_std", "mfcc_12_std"]
+selected_features = ["mfcc_1_std", "mfcc_2_std", "mfcc_3_std", "mfcc_4_std", "mfcc_5_std", "mfcc_6_std", "mfcc_7_std", "mfcc_8_std", "mfcc_9_std", "mfcc_10_std", "mfcc_11_std", "mfcc_12_std"]
 #selected_features = ["tempo"] 
 #selected_features = ["mfcc_1_mean", "spectral_rolloff_mean", "spectral_centroid_mean", "tempo"]
-selected_genres = ["reggae", "jazz", "disco", "classical", "metal", "country"]
+#selected_genres = ["reggae", "jazz", "disco", "classical", "metal", "country"]
 
 # Genres:   "pop", "disco", "metal", "classical", "hiphop", "reggae", "blues", "rock", "jazz", "country"]
-selected_genres = ["pop", "disco", "metal", "classical", "hiphop", "reggae", "blues", "rock", "jazz", "country"] # All genres
+selected_genres = ["pop", "metal", "disco", "blues", "reggae", "classical", "rock", "hiphop", "country", "jazz"] # All genres
 #selected_genres = ["reggae", "jazz", "disco", "classical", "metal", "country"]
 #selected_genres = ["reggae"]
 
@@ -42,11 +42,12 @@ def plot_pdf():
     n_features = len(selected_features)
     # Adjust the layout based on how many features you want to plot
     n_columns = 4
-    n_rows = 2 if n_features > 4 else 1  
+    n_rows = math.ceil(n_features / n_columns)
     fig, axes = plt.subplots(n_rows, n_columns, figsize=(n_columns * 4, n_rows * 3))
-    # If only one feature, axes is not an array
-    if n_features == 1:
-        axes = [axes]
+    
+    # Ensure axes is a flat array of Axes objects
+    if isinstance(axes, np.ndarray):
+        axes = axes.flatten()
     
     for i, feature in enumerate(selected_features):
         ax = axes[i]
@@ -152,10 +153,10 @@ def plot_corr():
 # Main: Select which plot(s) to display
 # ---------------------------------
 if __name__ == "__main__":
-    show_pdf_plot = False
-    show_contour_plot = True
+    show_pdf_plot = True
+    show_contour_plot = False
     show_hist2d_plot = False
-    show_corr_plot = True
+    show_corr_plot = False
 
     if show_pdf_plot:
         plot_pdf()
