@@ -78,10 +78,13 @@ df.columns = df.columns.str.strip()
 
 selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", "spectral_centroid_mean", "tempo"]
 #X:data, Y:class of data
-X = df[selected_features].values
-y = df["GenreID"].values
-X_train, X_test = X[:800],X[800:]
-Y_train, Y_test = y[:800],y[800:]
+
+train_df = df[df["Type"] == "Train"]
+test_df = df[df["Type"] == "Test"]
+X_train = train_df[selected_features].values
+Y_train = train_df["GenreID"].values  
+X_test  = test_df[selected_features].values
+Y_test  = test_df["GenreID"].values
 
 knn = kNN_Classifier(k=5)
 knn.fit(X_train, Y_train)

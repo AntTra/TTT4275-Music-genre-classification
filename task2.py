@@ -52,12 +52,14 @@ df.columns = df.columns.str.strip()
 
 # TODO: Split code into train and test
 selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", "spectral_centroid_mean", "tempo", "mfcc_2_mean", "mfcc_3_mean", "mfcc_4_mean", "mfcc_5_mean", "mfcc_6_mean", "mfcc_7_mean", "mfcc_8_mean", "mfcc_9_mean", "mfcc_10_mean", "mfcc_11_mean", "mfcc_12_mean","chroma_stft_1_mean", "chroma_stft_2_mean", "chroma_stft_3_mean", "chroma_stft_4_mean", "chroma_stft_5_mean", "chroma_stft_6_mean", "chroma_stft_7_mean", "chroma_stft_8_mean", "chroma_stft_9_mean", "chroma_stft_10_mean", "chroma_stft_11_mean", "chroma_stft_12_mean"]
-X = df[selected_features].values
 
-# Labels to genres
-y = df["GenreID"].values
 
-X_train, X_test, Y_train, Y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+train_df = df[df["Type"] == "Train"]
+test_df = df[df["Type"] == "Test"]
+X_train = train_df[selected_features].values
+Y_train = train_df["GenreID"].values  
+X_test  = test_df[selected_features].values
+Y_test  = test_df["GenreID"].values
 
 knn = kNN_Classifier(k=5)
 knn.fit(X_train, Y_train)
