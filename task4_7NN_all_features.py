@@ -1,47 +1,79 @@
+#imports
 import numpy as np
 import pandas as pd
 from collections import Counter
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-import seaborn as sns
 
+# python class with methods for a kNN classifier
 class kNN_Classifier:
     def __init__(self, k):
         self.k = k
         self.covariance_matrix= []
 
     def fit(self, X, Y):
+        """
+        Fit the model using the training data.
+        Parameters:
+        X : array-like, shape (n_samples, n_features)
+            Training data.
+        Y : array-like, shape (n_samples,)
+            Target labels.
+        """
         self.X_train = X
         self.Y_train = Y
-        self.X_mean = [np.mean(X[Y==i], axis=0) for i in range(10)]
-        self.X_centered = []
-        # Center the data
-        for i in range(len(self.X_train)):
-            self.X_centered.append(self.X_train[i] - self.X_mean[self.Y_train[i]])
-        self.X_centered = np.array(self.X_centered)
 
         for i in range(10):
             self.covariance_matrix.append(np.cov(self.X_train[Y_train==i], rowvar=False))
         self.covariance_matrix = np.array(self.covariance_matrix)
     
-    def euclidean_distance(self, X1, X2):
+    def _euclidean_distance(self, X1, X2):
+        """
+        Compute the Euclidean distance between two points.
+        Parameters:
+            X1 : array-like, shape (n_features,)
+            First point.
+            X2 : array-like, shape (n_features,)
+            Second point.
+        Returns:
+            distance : float
+                The Euclidean distance between X1 and X2.
+        """
         d = np.dot(X1-X2,X1-X2)
         return np.sqrt(d)
 
-    def mahalanobis_distance(self, X1, X2): 
+    def _mahalanobis_distance(self, X1, X2): 
+        """
+        Compute the Mahalanobis distance between two points.
+        Parameters:
+            X1 : array-like, shape (n_features,)
+            First point.
+            X2 : array-like, shape (n_features,)
+            Second point.
+        Returns:
+            distance : float
+                The Mahalanobis distance between X1 and X2.
+        """
         X1genre = self.Y_train[np.where(self.X_train == X1)[0][0]]
         d = np.dot(np.dot(X1-X2,np.linalg.inv(self.covariance_matrix[X1genre])),X1-X2) 
         return np.sqrt(d)
-    # Computational power increases with features and number of potential neighbors
-    # Increasing k increases computational power?
-    # Large k causes less distinction
-    # Small k can be heavily affected by noise
-    # Compare Euclidean to other types of distances
+
+
     def predict(self, X_test,metric='euclidean'):
+        """
+        Predict the class labels for the provided test data.
+        Parameters:
+            X_test : array-like, shape (n_samples, n_features)
+                Test data.
+            metric : str, optional (default='euclidean')
+                The distance metric to use ('euclidean' or 'mahalanobis').
+        Returns:
+            predictions : array-like, shape (n_samples,)
+                Predicted class labels for the test data.
+        """
+        # Selects distance function
         if metric == 'euclidean':
-            distance_func = self.euclidean_distance
+            distance_func = self._euclidean_distance
         elif metric == 'mahalanobis':
-            distance_func = self.mahalanobis_distance
+            distance_func = self._mahalanobis_distance
         else:
             return 0
         final_output = []
@@ -62,16 +94,39 @@ class kNN_Classifier:
         return final_output
 
     def score(self, predictions, Y_test):
+        """
+        Compute the accuracy of the predictions.
+        Parameters:
+            predictions : array-like, shape (n_samples,)
+                Predicted class labels.
+            Y_test : array-like, shape (n_samples,)
+                True class labels.
+        Returns:
+            accuracy : float
+                The accuracy of the predictions.
+        """
         Y_test = np.array(Y_test)
         return (predictions == Y_test).mean()
 
     def confusion_matrix(self, predictions, Y_test):
+        """
+        Compute the confusion matrix.
+        Parameters:
+            predictions : array-like, shape (n_samples,)
+                Predicted class labels.
+            Y_test : array-like, shape (n_samples,)
+                True class labels.
+        Returns:
+            cm : array-like, shape (n_classes, n_classes)
+                The confusion matrix.
+        """
         Y_test = np.array(Y_test)
         cm = np.zeros((10, 10), dtype=int)
         for i in range(len(predictions)):
             cm[Y_test[i]][predictions[i]] += 1
         return cm
     
+# Load the dataset
 df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
 # Whitespace removal
 df.columns = df.columns.str.strip()
@@ -80,24 +135,26 @@ df.columns = df.columns.str.strip()
 train_df = df[df["Type"] == "Train"]
 test_df = df[df["Type"] == "Test"]
 
-# Drop unnecessary columns
+# Drop unnecessary columns, extract data
 X_train = train_df.drop(columns=["File", "Genre", "GenreID", "Type","Track ID"]).values
 X_test  = test_df.drop(columns=["File", "Genre", "GenreID", "Type","Track ID"]).values
 Y_train = train_df["GenreID"].values  
 Y_test  = test_df["GenreID"].values
 
+#create and fit model
 knn = kNN_Classifier(k=7)
 knn.fit(X_train, Y_train)
 
+# Predict and evaluate the model using both distance metrics
 euclidean_prediction = knn.predict(X_test, metric='euclidean')
 mahalanobis_prediction = knn.predict(X_test, metric='mahalanobis')
 euclidean_confusion_matrix = knn.confusion_matrix(euclidean_prediction, Y_test)
 mahalanobis_confusion_matrix = knn.confusion_matrix(mahalanobis_prediction, Y_test)
 euclidean_score = knn.score(euclidean_prediction, Y_test)
 mahalanobis_score = knn.score(mahalanobis_prediction, Y_test)
+
+#print results
 print('selected features: all')
-#print("Predictions (Euclidean): ", euclidean_prediction)
-#print("Predictions (Mahalanobis): ", mahalanobis_prediction)
 print('Accuracy for ten genres (Euclidean): ', euclidean_score*100, '%')
 print('Accuracy for ten genres (Mahalanobis): ', mahalanobis_score*100, '%')
 print('Confusion Matrix (Euclidean): \n',euclidean_confusion_matrix)

@@ -2,9 +2,6 @@
 import numpy as np
 import pandas as pd
 from collections import Counter
-from sklearn.model_selection import train_test_split
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 # python class with methods for a kNN classifier
 class kNN_Classifier:
@@ -28,7 +25,7 @@ class kNN_Classifier:
             self.covariance_matrix.append(np.cov(self.X_train[Y_train==i], rowvar=False))
         self.covariance_matrix = np.array(self.covariance_matrix)
     
-    def euclidean_distance(self, X1, X2):
+    def _euclidean_distance(self, X1, X2):
         """
         Compute the Euclidean distance between two points.
         Parameters:
@@ -43,7 +40,7 @@ class kNN_Classifier:
         d = np.dot(X1-X2,X1-X2)
         return np.sqrt(d)
 
-    def mahalanobis_distance(self, X1, X2): 
+    def _mahalanobis_distance(self, X1, X2): 
         """
         Compute the Mahalanobis distance between two points.
         Parameters:
@@ -74,9 +71,9 @@ class kNN_Classifier:
         """
         # Selects distance function
         if metric == 'euclidean':
-            distance_func = self.euclidean_distance
+            distance_func = self._euclidean_distance
         elif metric == 'mahalanobis':
-            distance_func = self.mahalanobis_distance
+            distance_func = self._mahalanobis_distance
         else:
             return 0
         final_output = []
