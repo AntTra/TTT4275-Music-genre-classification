@@ -134,7 +134,7 @@ df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
 # Whitespace removal
 df.columns = df.columns.str.strip()
 
-selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", "spectral_centroid_mean", "tempo"]
+selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", "spectral_centroid_mean", "mfcc_4_std"]
 
 #exracting data from the dataframe
 train_df = df[df["Type"] == "Train"]
