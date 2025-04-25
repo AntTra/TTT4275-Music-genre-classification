@@ -76,9 +76,9 @@ df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
 # Whitespace removal
 df.columns = df.columns.str.strip()
 
-selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", "spectral_centroid_mean", "tempo"]
-#X:data, Y:class of data
+selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", "spectral_centroid_mean", "mfcc_4_std"]
 
+#X:data, Y:class of data
 train_df = df[df["Type"] == "Train"]
 test_df = df[df["Type"] == "Test"]
 X_train = train_df[selected_features].values
@@ -96,37 +96,7 @@ mahalanobis_confusion_matrix = knn.confusion_matrix(mahalanobis_prediction, Y_te
 euclidean_score = knn.score(euclidean_prediction, Y_test)
 mahalanobis_score = knn.score(mahalanobis_prediction, Y_test)
 print('selected features: ', selected_features)
-#print("Predictions (Euclidean): ", euclidean_prediction)
-#print("Predictions (Mahalanobis): ", mahalanobis_prediction)
 print('Accuracy for ten genres (Euclidean): ', euclidean_score*100, '%')
 print('Accuracy for ten genres (Mahalanobis): ', mahalanobis_score*100, '%')
 print('Confusion Matrix (Euclidean): \n',euclidean_confusion_matrix)
 print('Confusion Matrix (Mahalanobis): \n',mahalanobis_confusion_matrix)
-
-
-
-# selected_genres = ["pop", "disco", "metal", "classical"]#, "hiphop", "reggae", "blues", "rock", "jazz", "country"]
-# # Filter data by selected genres
-# data_filtered = df[df["Genre"].isin(selected_genres)]
-
-# Calculate summary statistics grouped by Genre
-# summary_stats = data_filtered.groupby("Genre")[selected_features].describe()
-# print("Summary Statistics by Genre:")
-# print(summary_stats)
-# print(knn.covariance())
-# #Plot PDF of genres and features 
-# plt.figure(figsize=(14, 12))
-# for i, feature in enumerate(selected_features):
-#     ax = plt.subplot(2, 2, i+1)
-#     for genre in selected_genres:
-#         subset = data_filtered[data_filtered["Genre"] == genre]
-#         sns.kdeplot(subset[feature], label=genre, fill=True, common_norm=False, ax=ax)
-#         ax.set_title("")
-#     #plt.title(f"PDF of {feature}")
-#     #plt.xlabel(feature)
-#     plt.ylabel("Density")
-# #plt.tight_layout()
-# plt.legend()
-# plt.show()
-
-
