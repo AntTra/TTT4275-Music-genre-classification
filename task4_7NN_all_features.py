@@ -80,12 +80,9 @@ df.columns = df.columns.str.strip()
 train_df = df[df["Type"] == "Train"]
 test_df = df[df["Type"] == "Test"]
 
-train_labels = train_df["GenreID"].values
-test_labels  = test_df["GenreID"].values
-
 # Drop unnecessary columns
-X_train = train_df.drop(columns=["File", "Genre", "GenreID", "Type"]).values
-X_test  = test_df.drop(columns=["File", "Genre", "GenreID", "Type"]).values
+X_train = train_df.drop(columns=["File", "Genre", "GenreID", "Type","Track ID"]).values
+X_test  = test_df.drop(columns=["File", "Genre", "GenreID", "Type","Track ID"]).values
 Y_train = train_df["GenreID"].values  
 Y_test  = test_df["GenreID"].values
 
