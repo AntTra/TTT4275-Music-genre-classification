@@ -19,8 +19,8 @@ df = load_data(filepath)
 #selected_features = ["spectral_centroid_mean", "spectral_centroid_var", "spectral_bandwidth_mean", "spectral_bandwidth_var", "spectral_rolloff_mean", "spectral_rolloff_var", "spectral_contrast_mean", "spectral_contrast_var", "spectral_flatness_mean", "spectral_flatness_var"]
 #selected_features = ["chroma_stft_1_mean", "chroma_stft_2_mean", "chroma_stft_3_mean", "chroma_stft_4_mean", "chroma_stft_5_mean", "chroma_stft_6_mean", "chroma_stft_7_mean", "chroma_stft_8_mean", "chroma_stft_9_mean", "chroma_stft_10_mean", "chroma_stft_11_mean", "chroma_stft_12_mean"]
 #selected_features = ["mfcc_1_mean", "mfcc_2_mean", "mfcc_3_mean", "mfcc_4_mean", "mfcc_5_mean", "mfcc_6_mean", "mfcc_7_mean", "mfcc_8_mean", "mfcc_9_mean", "mfcc_10_mean", "mfcc_11_mean", "mfcc_12_mean"]
-selected_features = ["mfcc_1_std", "mfcc_2_std", "mfcc_3_std", "mfcc_4_std", "mfcc_5_std", "mfcc_6_std", "mfcc_7_std", "mfcc_8_std", "mfcc_9_std", "mfcc_10_std", "mfcc_11_std", "mfcc_12_std"]
-#selected_features = ["tempo"] 
+#selected_features = ["mfcc_1_std", "mfcc_2_std", "mfcc_3_std", "mfcc_4_std", "mfcc_5_std", "mfcc_6_std", "mfcc_7_std", "mfcc_8_std", "mfcc_9_std", "mfcc_10_std", "mfcc_11_std", "mfcc_12_std"]
+selected_features = ["tempo"] 
 #selected_features = ["mfcc_1_mean", "spectral_rolloff_mean", "spectral_centroid_mean", "tempo"]
 #selected_genres = ["reggae", "jazz", "disco", "classical", "metal", "country"]
 
@@ -68,14 +68,14 @@ def plot_contour():
     with one custom legend entry per genre.
     """
     # Define the features to plot
-    feature_x = "spectral_centroid_mean"
-    feature_y = "mfcc_1_mean"
+    feature_y = "mfcc_9_std"
+    feature_x = "mfcc_1_mean"
     
     # Create figure and axes
     fig, ax = plt.subplots(figsize=(10, 8))
     
     # Create a color palette with one color per genre
-    palette = sns.color_palette("viridis_r", len(selected_genres))
+    palette = sns.color_palette("tab10", len(selected_genres))
     
     # Plot the contour for each genre using a unique color, without setting a label.
     for i, genre in enumerate(selected_genres):
@@ -151,12 +151,12 @@ def plot_corr():
 
 # ----------------------------------
 # Main: Select which plot(s) to display
-# ---------------------------------
+# ----------------------------------
 if __name__ == "__main__":
     show_pdf_plot = True
-    show_contour_plot = False
-    show_hist2d_plot = False
-    show_corr_plot = False
+    show_contour_plot = True
+    show_hist2d_plot = True
+    show_corr_plot = True
 
     if show_pdf_plot:
         plot_pdf()

@@ -67,7 +67,7 @@ class EM:
             self.means[i] = np.dot(responsibilities[:, i], X) / N[i]
             
             #diff = X - self.means[i]
-            #mCov[i] = np.dot(responsibilities[:, i] * diff.T, diff) / N[i] # Hahaha lol saken vår er heldigvis supervised 
+            #mCov[i] = np.dot(responsibilities[:, i] * diff.T, diff) / N[i] 
             
             self.weights[i] = N[i] / n_samples
 
@@ -101,7 +101,9 @@ class GMM_Classifier:
             responsibilities[:, i] = density
             
         # Posterior probabilities
-        responsibilities /= (responsibilities.sum(axis=1, keepdims=True))
+        responsibilities_sum = responsibilities.sum(axis=1, keepdims=True)
+        responsibilities /= (responsibilities_sum + 1e-8)
+
         
         # Predict the genre  with the highest probability.
         predicted_labels = np.argmax(responsibilities, axis=1)
@@ -126,7 +128,7 @@ df.columns = df.columns.str.strip()
 #selected_features = ["spectral_bandwidth_mean", "spectral_bandwidth_var", 
 #                     "spectral_rolloff_mean", "spectral_rolloff_var", "spectral_contrast_mean", "spectral_contrast_var", "mfcc_1_mean", "tempo",
 #                     "mfcc_4_mean", "mfcc_5_std"]
-selected_features = ["spectral_centroid_mean", "spectral_centroid_var", "spectral_bandwidth_mean", "spectral_bandwidth_var", "spectral_rolloff_mean","spectral_rolloff_var","spectral_flatness_mean","spectral_contrast_mean", "spectral_contrast_var",
+selected_features = ["spectral_centroid_mean", "spectral_centroid_var", "spectral_bandwidth_mean", "spectral_bandwidth_var", "spectral_rolloff_mean","spectral_rolloff_var","spectral_flatness_mean", "spectral_contrast_var",
                      "mfcc_1_mean", "mfcc_2_mean", "mfcc_3_mean", "mfcc_4_mean", "mfcc_5_mean","mfcc_6_mean", "mfcc_7_mean","mfcc_8_mean", "mfcc_9_mean", "mfcc_10_mean", "mfcc_11_mean", "mfcc_12_mean",
                      "chroma_stft_1_mean", "chroma_stft_2_mean", "chroma_stft_3_mean", "chroma_stft_4_mean", "chroma_stft_5_mean", "chroma_stft_6_mean", "chroma_stft_7_mean", "chroma_stft_8_mean", "chroma_stft_9_mean", "chroma_stft_10_mean", "chroma_stft_11_mean", "chroma_stft_12_mean",
                      "mfcc_1_std", "mfcc_2_std", "mfcc_3_std", "mfcc_4_std", "mfcc_5_std", "mfcc_6_std", "mfcc_7_std", "mfcc_8_std", "mfcc_9_std", "mfcc_10_std", "mfcc_11_std", "mfcc_12_std",
