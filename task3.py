@@ -142,7 +142,7 @@ X_test  = test_df[selected_features].values
 Y_test  = test_df["GenreID"].values
 
 # fits data to the model
-knn = kNN_Classifier(k=8)
+knn = kNN_Classifier(k=5)
 knn.fit(X_train, Y_train)
 
 #predicts the data using euclidean and mahalanobis distance
