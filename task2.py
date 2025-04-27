@@ -1,96 +1,169 @@
-import numpy as np
 import pandas as pd
-from collections import Counter
-from sklearn.model_selection import train_test_split
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import matplotlib.patches as mpatches
+import math
+# ---------------------------------
+# Data Loading and Preprocessing
+# ---------------------------------
+def load_data(filepath):
+    df = pd.read_csv(filepath, delimiter='\t')
+    df.columns = df.columns.str.strip()  # Remove extra whitespace from column names
+    return df
 
-class kNN_Classifier:
-    def __init__(self, k):
-        self.k = k
+filepath = 'Classification music/GenreClassData_30s.txt'
+df = load_data(filepath)
 
-    def fit(self, X, Y):
-        self.X_train = X
-        self.Y_train = Y
+# Selected features and genres 
+#selected_features = ["spectral_centroid_mean", "spectral_centroid_var", "spectral_bandwidth_mean", "spectral_bandwidth_var", "spectral_rolloff_mean", "spectral_rolloff_var", "spectral_contrast_mean", "spectral_contrast_var", "spectral_flatness_mean", "spectral_flatness_var"]
+#selected_features = ["chroma_stft_1_mean", "chroma_stft_2_mean", "chroma_stft_3_mean", "chroma_stft_4_mean", "chroma_stft_5_mean", "chroma_stft_6_mean", "chroma_stft_7_mean", "chroma_stft_8_mean", "chroma_stft_9_mean", "chroma_stft_10_mean", "chroma_stft_11_mean", "chroma_stft_12_mean"]
+#selected_features = ["mfcc_1_mean", "mfcc_2_mean", "mfcc_3_mean", "mfcc_4_mean", "mfcc_5_mean", "mfcc_6_mean", "mfcc_7_mean", "mfcc_8_mean", "mfcc_9_mean", "mfcc_10_mean", "mfcc_11_mean", "mfcc_12_mean"]
+#selected_features = ["mfcc_1_std", "mfcc_2_std", "mfcc_3_std", "mfcc_4_std", "mfcc_5_std", "mfcc_6_std", "mfcc_7_std", "mfcc_8_std", "mfcc_9_std", "mfcc_10_std", "mfcc_11_std", "mfcc_12_std"]
+#selected_features = ["tempo"] 
+selected_features = ["mfcc_1_mean", "spectral_rolloff_mean", "spectral_centroid_mean", "tempo", "mfcc_4_std"]
+selected_genres = ["pop", "disco", "classical", "metal"]
 
-    def euclidean_distance(self, X1, X2):
-        d = sum((a - b)**2 for a, b in zip(X1, X2))
-        return np.sqrt(d)
+# Genres:   "pop", "disco", "metal", "classical", "hiphop", "reggae", "blues", "rock", "jazz", "country"]
+#selected_genres = ["pop", "metal", "disco", "blues", "reggae", "classical", "rock", "hiphop", "country", "jazz"] # All genres
+#selected_genres = ["reggae", "jazz", "disco", "classical", "metal", "country"]
+#selected_genres = ["reggae"]
 
-    # Computational power increases with features and number of potential neighbors
-    # Increasing k increases computational power?
-    # Large k causes less distinction
-    # Small k can be heavily affected by noise
-    # Compare Euclidean to other types of distances
-    def predict(self, X_test):
-        final_output = []
-        for i in range(len(X_test)):
-            distances = []
-            for j in range(len(self.X_train)):
-                distance = self.euclidean_distance(self.X_train[j] , X_test[i])
-                distances.append((distance, j))
-            # Sort distances and select KNN
-            distances.sort(key=lambda x: x[0])
-            k_nearest = distances[:self.k]
-            
-            # Get labels of neighbors and majority voting
-            votes = [self.Y_train[j] for (_, j) in k_nearest]
-            ans = Counter(votes).most_common(1)[0][0]
-            final_output.append(ans)
-            
-        return final_output
-
-    def score(self, X_test, Y_test):
-        predictions = np.array(self.predict(X_test))
-        Y_test = np.array(Y_test)
-        return (predictions == Y_test).mean()
-
-df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
-
-# Whitespace removal
-df.columns = df.columns.str.strip()
-
-# TODO: Split code into train and test
-selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", "spectral_centroid_mean", "tempo", "mfcc_2_mean", "mfcc_3_mean", "mfcc_4_mean", "mfcc_5_mean", "mfcc_6_mean", "mfcc_7_mean", "mfcc_8_mean", "mfcc_9_mean", "mfcc_10_mean", "mfcc_11_mean", "mfcc_12_mean","chroma_stft_1_mean", "chroma_stft_2_mean", "chroma_stft_3_mean", "chroma_stft_4_mean", "chroma_stft_5_mean", "chroma_stft_6_mean", "chroma_stft_7_mean", "chroma_stft_8_mean", "chroma_stft_9_mean", "chroma_stft_10_mean", "chroma_stft_11_mean", "chroma_stft_12_mean"]
-
-
-train_df = df[df["Type"] == "Train"]
-test_df = df[df["Type"] == "Test"]
-X_train = train_df[selected_features].values
-Y_train = train_df["GenreID"].values  
-X_test  = test_df[selected_features].values
-Y_test  = test_df["GenreID"].values
-
-knn = kNN_Classifier(k=5)
-knn.fit(X_train, Y_train)
-
-prediction = knn.predict(X_test)
-
-score = knn.score(X_test, Y_test)
-print("Predictions: ", prediction)
-print('Accuracy for ten genres: ', score*100, '%')
-
-selected_genres = ["pop", "disco", "metal", "classical"] #"hiphop", "reggae", "blues", "rock", "jazz", "country"]
-# Filter data by selected genres
 data_filtered = df[df["Genre"].isin(selected_genres)]
 
-# Calculate summary statistics grouped by Genre
-summary_stats = data_filtered.groupby("Genre")[selected_features].describe()
-print("Summary Statistics by Genre:")
-print(summary_stats)
-
-# Plot PDF of genres and features 
-plt.figure(figsize=(14, 12))
-for i, feature in enumerate(selected_features):
-    plt.plot()
-    for genre in selected_genres:
-        subset = data_filtered[data_filtered["Genre"] == genre]
-        sns.kdeplot(subset[feature], label=genre, fill=True, common_norm=False)
-    plt.title(f"PDF of {feature}")
-    plt.xlabel(feature)
-    plt.ylabel("Density")
-    plt.legend()
+# ---------------------------------
+# Plotting Functions
+# ---------------------------------
+def plot_pdf():
+    """
+    Plot the 1D KDE (PDF) for each selected feature,
+    with curves for each genre overlaid.
+    """
+    n_features = len(selected_features)
+    # Adjust the layout based on how many features you want to plot
+    n_columns = 2
+    n_rows = math.ceil(n_features / n_columns)
+    fig, axes = plt.subplots(n_rows, n_columns, figsize=(n_columns * 4, n_rows * 3))
+    
+    # Ensure axes is a flat array of Axes objects
+    if isinstance(axes, np.ndarray):
+        axes = axes.flatten()
+    
+    for i, feature in enumerate(selected_features):
+        ax = axes[i]
+        for genre in selected_genres:
+            subset = data_filtered[data_filtered["Genre"] == genre]
+            sns.kdeplot(subset[feature], label=genre, fill=True, common_norm=False, ax=ax)
+        ax.set_title(f"PDF of {feature}")
+        ax.set_xlabel(feature)
+        ax.set_ylabel("Density")
+        ax.legend()
+    
+    plt.tight_layout()
     plt.show()
 
+def plot_contour():
+    """
+    Plot a 2D KDE contour plot for a specified pair of features,
+    with one custom legend entry per genre.
+    """
+    # Define the features to plot
+    feature_x = "tempo"
+    feature_y = "mfcc_4_std"
+    
+    # Create figure and axes
+    fig, ax = plt.subplots(figsize=(10, 8))
+    
+    # Create a color palette with one color per genre
+    palette = sns.color_palette("viridis_r", len(selected_genres))
+    
+    # Plot the contour for each genre using a unique color, without setting a label.
+    for i, genre in enumerate(selected_genres):
+        subset = data_filtered[data_filtered["Genre"] == genre]
+        sns.kdeplot(
+            x=subset[feature_x],
+            y=subset[feature_y],
+            #cmap='viridis_r',
+            levels=5,             
+            fill=True,           
+            common_norm=False,
+            alpha=0.5,
+            color=palette[i],
+            label=None
+        )
+        plt.scatter(
+            subset[feature_x], 
+            subset[feature_y], 
+            color=palette[i], 
+            alpha=0.3, 
+            s=10  # Adjust size for better visibility
+        )
+    
+    # Remove any automatically generated legend entries, if present
+    if ax.get_legend() is not None:
+        ax.get_legend().remove()
+    
+    # Create custom legend handles for each genre
+    handles = [mpatches.Patch(color=palette[i], label=genre) 
+               for i, genre in enumerate(selected_genres)]
+    
+    ax.set_xlabel(feature_x)
+    ax.set_ylabel(feature_y)
+    ax.set_title(f"Contour Plot of {feature_x} vs. {feature_y} by Genre")
+    ax.legend(handles=handles, title="Genre")
+    plt.show()
 
+def plot_relplot(data, genres, x_feature, y_feature, col_wrap=5):
+    """
+    Plot a seaborn lmplot (scatter + linear fit) of two features,
+    with separate facets per genre.
+    """
+    # Use lmplot to include linear trend lines per genre facet
+    g = sns.lmplot(
+        x=x_feature,
+        y=y_feature,
+        col="Genre",
+        col_wrap=col_wrap,
+        data=data[data["Genre"].isin(genres)],
+        height=4,
+        aspect=1,
+        scatter_kws={"s": 20, "alpha": 0.5},
+        line_kws={"linewidth": 1},
+        palette='tab10',
+        # Fit a separate regression line for each facet
+        sharex=False,
+        sharey=False,
+    )
+    g.fig.suptitle(
+        f"{x_feature} vs {y_feature} per Genre", y=1.02
+    )
+    g.set_axis_labels(x_feature, y_feature)
+    plt.show()
+# ---------------------------------
+# Justification of Mahalanobian usage
+# ---------------------------------
+def plot_corr():
+    cov = df[selected_features].cov()
+    print("Covariance matrix:")
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cov, annot=True, cmap='coolwarm')
+    plt.title("Covariance Matrix Heatmap")
+    plt.show()
 
+# ----------------------------------
+# Main: Select plot(s) to display
+# ---------------------------------
+if __name__ == "__main__":
+    show_pdf_plot = False
+    show_contour_plot = False
+    show_relplot = False
+    show_corr_plot = True
+
+    if show_pdf_plot:
+        plot_pdf()
+    if show_contour_plot:
+        plot_contour()
+    if show_corr_plot:
+        plot_corr()
+    if show_relplot:
+        plot_relplot(data_filtered, selected_genres, 'spectral_rolloff_mean', 'spectral_centroid_mean')
