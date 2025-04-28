@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from collections import Counter
-from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import seaborn as sns
 # import tensorflow as tf
@@ -107,14 +106,26 @@ class kNN_Classifier:
             self.X_centered.append(self.X_train[i] - self.X_mean[self.Y_train[i]])
         self.X_centered = np.array(self.X_centered)
 
+        self.X_mean = [np.mean(X[Y==i], axis=0) for i in range(10)]
+        self.X_centered = []
+        # Center the data
+        for i in range(len(self.X_train)):
+            self.X_centered.append(self.X_train[i] - self.X_mean[self.Y_train[i]])
+        self.X_centered = np.array(self.X_centered)
+
         for i in range(10):
             self.covariance_matrix.append(np.cov(self.X_train[Y_train==i], rowvar=False))
+        self.covariance_matrix = np.array(self.covariance_matrix)
         self.covariance_matrix = np.array(self.covariance_matrix)
 
     
     def euclidean_distance(self, X1, X2):
         d = sum((a - b)**2 for a, b in zip(X1, X2))
         return np.sqrt(d)
+
+    def mahalanobis_distance(self, X1, X2): #must make actual distance  
+        X1genre = self.Y_train[np.where(self.X_train == X1)[0][0]]
+        d = np.dot(np.dot(X1-X2,np.linalg.inv(self.covariance_matrix[X1genre])),X1-X2) #sum(np.dot(a - b, np.linalg.inv(self.covariance_matrix[a])) for a, b in zip(X1, X2))
 
     def mahalanobis_distance(self, X1, X2): #must make actual distance  
         X1genre = self.Y_train[np.where(self.X_train == X1)[0][0]]
@@ -236,6 +247,12 @@ score = mahala.score(prediction, Y_test)
 print("================================================")
 print("MAHALANOBIS CLASSIFIER")
 print('Accuracy for ten genres: ', score*100, '%')
+print('Confusion Matrix: \n',confusion_matrix)
+
+
+# selected_genres = ["pop", "disco", "metal", "classical"]#, "hiphop", "reggae", "blues", "rock", "jazz", "country"]
+# # Filter data by selected genres
+# data_filtered = df[df["Genre"].isin(selected_genres)]
 print('Confusion Matrix: \n',confusion_matrix)
 
 
