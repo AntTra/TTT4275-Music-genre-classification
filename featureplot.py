@@ -113,29 +113,45 @@ def plot_contour():
     ax.legend(handles=handles, title="Genre")
     plt.show()
 
-def plot_hist2d():
+def plot_cov_per_genre(data, genres, features):
     """
-    Plot a 2D histogram for each genre separately.
+    For each genre in `genres`, compute and plot the covariance
+    matrix of `features` restricted to that genre.
     """
-    feature_x = "mfcc_1_mean"
-    feature_y = "mfcc_4_std"
-    
-    n_genres = len(selected_genres)
-    n_columns = 4
-    n_rows = 4 if n_genres > 4 else 1
-    fig, axes = plt.subplots(n_rows, n_columns, figsize=(n_columns * 4, n_rows * 3))
-    # Ensure axes is iterable
-    if n_genres == 1:
-        axes = [axes]
-    
-    for i, genre in enumerate(selected_genres):
-        subset = data_filtered[data_filtered["Genre"] == genre]
-        axes[i].hist2d(subset[feature_x], subset[feature_y], bins=30, cmap='viridis')
-        axes[i].set_title(genre)
-        axes[i].set_xlabel(feature_x)
-        axes[i].set_ylabel(feature_y)
-    
-    plt.tight_layout()
+    import math
+
+    n_genres = len(genres)
+    n_cols = 4
+    n_rows = math.ceil(n_genres / n_cols)
+
+    fig, axes = plt.subplots(
+        n_rows, n_cols,
+        figsize=(n_cols * 4, n_rows * 3),
+        constrained_layout=True
+    )
+    # flatten axes array
+    axes_flat = axes.flatten() if isinstance(axes, np.ndarray) else [axes]
+
+    for ax, genre in zip(axes_flat, genres):
+        subset = data[data["Genre"] == genre]
+        cov = subset[features].cov()
+        sns.heatmap(
+            cov,
+            annot=True,
+            fmt=".2f",
+            cmap="coolwarm",
+            cbar=False,
+            ax=ax
+        )
+        ax.set_title(f"{genre} covariance")
+        ax.tick_params(axis='x', rotation=45)
+        ax.tick_params(axis='y', rotation=0)
+
+    # turn off any extra axes
+    for ax in axes_flat[n_genres:]:
+        ax.axis("off")
+
+    plt.suptitle("Per-Genre Covariance Heatmaps", y=1.02)
     plt.show()
 
 # ---------------------------------
@@ -155,14 +171,14 @@ def plot_corr():
 if __name__ == "__main__":
     show_pdf_plot = True
     show_contour_plot = False
-    show_hist2d_plot = False
+    show_cov_plot = True
     show_corr_plot = False
 
     if show_pdf_plot:
         plot_pdf()
     if show_contour_plot:
         plot_contour()
-    if show_hist2d_plot:
-        plot_hist2d()
+    if show_cov_plot:
+        plot_cov_per_genre(data_filtered, selected_genres, selected_features)
     if show_corr_plot:
         plot_corr()
