@@ -3,11 +3,29 @@ import pandas as pd
 
 # Expectation-Maximization (EM) algorithm for Gaussian Mixture Model (GMM)
 class EM:
-    def __init__(self, n_components=10, max_iter=100): # 10 components for 10 genres, max_iter for iterations of EM
+    def __init__(self, n_components=10, max_iter=100): 
+        """
+        Initialize the EM algorithm for GMM.
+
+        Parameters:
+            n_components : int
+                Number of mixture components (e.g., genres).
+            max_iter : int
+                Maximum number of EM iterations.
+        """
         self.n_components = n_components
         self.max_iter = max_iter
 
     def fit(self, X, Y): # Training data, genre labels(integer)
+        """
+        Fit the model using the training data.
+
+        Parameters:
+            X : array-like, shape (n_samples, n_features)
+                Training data.
+            Y : array-like, shape (n_samples,)
+                Target labels (component indices).
+        """
         self.X_train = X
         self.Y_train = Y
         n_samples, n_features = X.shape
@@ -31,6 +49,17 @@ class EM:
             self._m_step(X, responsibilities)
             
     def _mahalanobis_distance(self, X1, X2, genre): 
+        """
+        Compute the Mahalanobis distance between two points.
+
+        Parameters:
+            X1 : array-like, shape (n_features,)
+            X2 : array-like, shape (n_features,)
+            genre : int, component index to select covariance
+
+        Returns:
+            float : Mahalanobis distance
+        """
         # X1genre = self.Y_train[np.where(self.X_train == X1)[0][0]]
         d = np.dot(np.dot(X1-X2,np.linalg.inv(self.covariance_matrix[genre])),X1-X2) 
         return np.sqrt(d)
@@ -46,14 +75,12 @@ class EM:
                 
                 d = self._mahalanobis_distance(self.X_train[j], self.means[i], genre)**2
                 det_cov = np.linalg.det(self.covariance_matrix[genre])
-                # Compute the normalization constant for a multivariate Gaussian in d dimensions.
                 norm_const = 1.0 / (((2 * np.pi) ** (n_features / 2)) * np.sqrt(det_cov))
                 
                 density[j] = self.weights[i] * norm_const * np.exp(-0.5 * d)
                 
             responsibilities[:, i] = density
             
-        # Normalize the responsibilities so that the sum over components is 1 for each sample.
         responsibilities /= responsibilities.sum(axis=1, keepdims=True)
             
         return responsibilities
@@ -122,20 +149,11 @@ class GMM_Classifier:
 df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
 df.columns = df.columns.str.strip()
 #0=pop, 1=metal, 2=disco, 3=blues, 4=reggae, 5=classical, 6=rock, 7=hihop, 8=country and 9=jazz
-
-#selected_features = ["spectral_bandwidth_mean", "spectral_bandwidth_var", 
-#                     "spectral_rolloff_mean", "spectral_rolloff_var", "spectral_contrast_mean", "spectral_contrast_var", "mfcc_1_mean", "tempo",
-#                     "mfcc_4_mean", "mfcc_5_std"]
-selected_features = ["spectral_centroid_mean", "spectral_centroid_var", "spectral_bandwidth_mean", "spectral_bandwidth_var", "spectral_rolloff_mean","spectral_rolloff_var","spectral_flatness_mean","spectral_contrast_mean", "spectral_contrast_var",
+selected_features = ["spectral_centroid_mean", "spectral_centroid_var", "spectral_bandwidth_mean", "spectral_bandwidth_var", "spectral_rolloff_mean","spectral_rolloff_var","spectral_flatness_mean","spectral_contrast_mean",
                      "mfcc_1_mean", "mfcc_2_mean", "mfcc_3_mean", "mfcc_4_mean", "mfcc_5_mean","mfcc_6_mean", "mfcc_7_mean","mfcc_8_mean", "mfcc_9_mean", "mfcc_10_mean", "mfcc_11_mean", "mfcc_12_mean",
                      "chroma_stft_1_mean", "chroma_stft_2_mean", "chroma_stft_3_mean", "chroma_stft_4_mean", "chroma_stft_5_mean", "chroma_stft_6_mean", "chroma_stft_7_mean", "chroma_stft_8_mean", "chroma_stft_9_mean", "chroma_stft_10_mean", "chroma_stft_11_mean", "chroma_stft_12_mean",
                      "mfcc_1_std", "mfcc_2_std", "mfcc_3_std", "mfcc_4_std", "mfcc_5_std", "mfcc_6_std", "mfcc_7_std", "mfcc_8_std", "mfcc_9_std", "mfcc_10_std", "mfcc_11_std", "mfcc_12_std",
                      "tempo"]
-#X = df[selected_features].values
-#y = df["GenreID"].values
-# Split data into training and test sets
-#X_train, X_test = X[:800], X[800:]
-#Y_train, Y_test = y[:800], y[800:]
 
 train_df = df[df["Type"] == "Train"]
 test_df = df[df["Type"] == "Test"]
