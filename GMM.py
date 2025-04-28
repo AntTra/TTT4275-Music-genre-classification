@@ -61,10 +61,7 @@ class EM:
         Returns:
             float : Mahalanobis distance
         """
-        d = np.dot(
-            np.dot(X1 - X2, np.linalg.inv(self.covariance_matrix[genre])),
-            (X1 - X2)
-        )
+        d = np.dot(np.dot(X1 - X2, np.linalg.inv(self.covariance_matrix[genre])),(X1 - X2))
         return np.sqrt(d)
 
     def _e_step(self, X):# Calculate the responsibilities (probabilities) for each component
@@ -73,17 +70,17 @@ class EM:
         resp = np.zeros((n_samples, K))
 
         for k in range(K):
-            μ_k     = self.means[k]
-            Σ_k     = self.covariance_matrix[k]
-            invΣ_k  = np.linalg.inv(Σ_k)
-            detΣ_k  = np.linalg.det(Σ_k)
+            mu_k     = self.means[k]
+            sig_k     = self.covariance_matrix[k]
+            invsig_k  = np.linalg.inv(sig_k)
+            detsig_k  = np.linalg.det(sig_k)
             norm_k  = self.weights[k] / (
-                (2*np.pi)**(n_feat/2) * np.sqrt(detΣ_k)
+                (2*np.pi)**(n_feat/2) * np.sqrt(detsig_k)
             )
 
             for n in range(n_samples):
-                diff    = X[n] - μ_k
-                d2      = diff.dot(invΣ_k).dot(diff)
+                diff    = X[n] - mu_k
+                d2      = diff.dot(invsig_k).dot(diff)
                 resp[n, k] = norm_k * np.exp(-0.5 * d2)
 
         # Normalize so each row sums to 1
