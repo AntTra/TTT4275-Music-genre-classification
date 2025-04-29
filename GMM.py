@@ -85,6 +85,7 @@ class EM:
 
         # Normalize so each row sums to 1
         resp /= resp.sum(axis=1, keepdims=True)
+        resp = resp.clip(1e-10, 1)  # Avoid division by zero
         return resp
 
     def _m_step(self, X, responsibilities): # Update means, covariances, and weights based on responsibilities
