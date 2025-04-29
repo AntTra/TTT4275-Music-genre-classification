@@ -7,6 +7,7 @@ from collections import Counter
 class kNN_Classifier:
     def __init__(self, k):
         self.k = k
+        self.n_components = 10
         self.covariance_matrix= []
 
     def fit(self, X, Y):
@@ -20,9 +21,13 @@ class kNN_Classifier:
         """
         self.X_train = X
         self.Y_train = Y
+        
+        self.num_classes = self.n_components
 
-        for i in range(10):
-            self.covariance_matrix.append(np.cov(self.X_train[Y_train==i], rowvar=False))
+        for i in range(self.num_classes):
+            self.covariance_matrix.append(
+                np.cov(self.X_train[self.Y_train==i], rowvar=False)
+            )
         self.covariance_matrix = np.array(self.covariance_matrix)
     
     def _euclidean_distance(self, X1, X2):
@@ -37,7 +42,8 @@ class kNN_Classifier:
             distance : float
                 The Euclidean distance between X1 and X2.
         """
-        d = np.dot(X1-X2,X1-X2)
+        diff = X1 - X2
+        d = np.dot(diff, diff)
         return np.sqrt(d)
 
     def _mahalanobis_distance(self, X1, X2): 
@@ -52,8 +58,12 @@ class kNN_Classifier:
             distance : float
                 The Mahalanobis distance between X1 and X2.
         """
+        diff = X1 - X2
+        # Get the genre of X1
         X1genre = self.Y_train[np.where(self.X_train == X1)[0][0]]
-        d = np.dot(np.dot(X1-X2,np.linalg.inv(self.covariance_matrix[X1genre])),X1-X2) 
+        d = np.dot(np.dot(diff, 
+                    np.linalg.inv(self.covariance_matrix[X1genre])), diff
+                    ) 
         return np.sqrt(d)
 
 
@@ -132,13 +142,16 @@ df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
 # Whitespace removal
 df.columns = df.columns.str.strip()
 
-selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", "spectral_centroid_mean", "tempo"]
+selected_features = ["spectral_rolloff_mean", "mfcc_1_mean", 
+                     "spectral_centroid_mean", "tempo"]
 
 #exracting data from the dataframe
 train_df = df[df["Type"] == "Train"]
 test_df = df[df["Type"] == "Test"]
+
 X_train = train_df[selected_features].values
 Y_train = train_df["GenreID"].values  
+
 X_test  = test_df[selected_features].values
 Y_test  = test_df["GenreID"].values
 
@@ -149,8 +162,10 @@ knn.fit(X_train, Y_train)
 #predicts the data using euclidean and mahalanobis distance
 euclidean_prediction = knn.predict(X_test, metric='euclidean')
 mahalanobis_prediction = knn.predict(X_test, metric='mahalanobis')
+
 euclidean_confusion_matrix = knn.confusion_matrix(euclidean_prediction, Y_test)
 mahalanobis_confusion_matrix = knn.confusion_matrix(mahalanobis_prediction, Y_test)
+
 euclidean_score = knn.score(euclidean_prediction, Y_test)
 mahalanobis_score = knn.score(mahalanobis_prediction, Y_test)
 

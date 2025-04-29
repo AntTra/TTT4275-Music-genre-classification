@@ -29,8 +29,8 @@ class EM:
         self.Y_train       = Y
         n_samples, n_feat = X.shape
         
-        self.X_mean         = []
-        self.num_classes    = self.n_components
+        self.X_mean = []
+        self.num_classes = self.n_components
         self.covariance_matrix = []
         
         for i in range(self.num_classes):
@@ -111,14 +111,36 @@ class GMM_Classifier:
         return np.argmax(resp, axis=1)
 
     def score(self, X, y):
+        """
+        Compute the accuracy of the predictions.
+        Parameters:
+            predictions : array-like, shape (n_samples,)
+                Predicted class labels.
+            Y_test : array-like, shape (n_samples,)
+                True class labels.
+        Returns:
+            accuracy : float
+                The accuracy of the predictions.
+        """
         y_pred = self.predict(X)
         return np.mean(y_pred == y)
 
     def confusion_matrix(self, predictions, Y_test):
+        """
+        Compute the confusion matrix.
+        Parameters:
+            predictions : array-like, shape (n_samples,)
+                Predicted class labels.
+            Y_test : array-like, shape (n_samples,)
+                True class labels.
+        Returns:
+            cm : array-like, shape (n_classes, n_classes)
+                The confusion matrix.
+        """
         Y_test = np.array(Y_test)
-        cm     = np.zeros((self.n_components, self.n_components), dtype=int)
-        for true, pred in zip(Y_test, predictions):
-            cm[true, pred] += 1
+        cm = np.zeros((10, 10), dtype=int)
+        for i in range(len(predictions)):
+            cm[Y_test[i]][predictions[i]] += 1
         return cm
 
 df = pd.read_csv('Classification music/GenreClassData_30s.txt', delimiter='\t')
