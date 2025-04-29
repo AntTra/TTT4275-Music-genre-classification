@@ -106,6 +106,7 @@ class kNN_Classifier:
                 The accuracy of the predictions.
         """
         Y_test = np.array(Y_test)
+        
         return (predictions == Y_test).mean()
 
     def confusion_matrix(self, predictions, Y_test):
